@@ -1,0 +1,54 @@
+#!/bin/sh /etc/rc.common
+# Author: Johannes Pohl <johannes.pohl@badaix.de>
+START=90
+
+USE_PROCD=1
+
+NAME=snapclient
+PROG=/usr/bin/$NAME
+
+append_arg() {
+    local cfg="$1"
+    local var="$2"
+    local opt="$3"
+    local def="$4"
+    local val
+
+    config_get val "$cfg" "$var"
+    [ -n "$val" -o -n "$def" ] && procd_append_param command "$opt" "${val:-$def}"
+}
+
+start_instance()
+{
+    local cfg="$1"
+    local enabled
+
+    config_get_bool enabled "$cfg" 'enabled' 1
+    [ $enabled -gt 0 ] || return
+
+    procd_open_instance
+    procd_set_param command "$PROG"
+    procd_set_param pidfile "/var/run/snapclient-${cfg}.pid"
+    procd_set_param respawn
+    procd_set_param stderr 1
+    procd_set_param stdout 1
+    procd_set_param file "/etc/config/snapclient"
+
+    
+    append_arg "$cfg" host "--host"
+    append_arg "$cfg" port "--port" "1704"
+    append_arg "$cfg" hostid "--hostID"
+    append_arg "$cfg" soundcard "--soundcard" 
+    append_arg "$cfg" player "--player" "alsa"
+    append_arg "$cfg" sampleformat "--sampleformat" "48000:16:*"
+    append_arg "$cfg" mixer "--mixer"
+    append_arg "$cfg" logsink "--logsink"
+    append_arg "$cfg" logfilter "--logfilter"
+    
+    procd_close_instance
+}
+
+start_service() {
+    config_load snapclient
+    config_foreach start_instance snapclient
+}

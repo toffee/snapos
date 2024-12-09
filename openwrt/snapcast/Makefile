@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME := snapcast
-PKG_VERSION := 0.27.0
+PKG_VERSION := 0.29.0
 PKG_RELEASE := $(PKG_SOURCE_VERSION)
 PKG_USE_MIPS16 := 0
 
 # PKG_MIRROR_HASH=skip
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/badaix/snapcast.git
-PKG_SOURCE_VERSION:=v0.27.0
+PKG_SOURCE_VERSION:=v0.29.0
 PKG_BUILD_DIR:=$(BUILD_DIR)/snapcast-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
@@ -107,9 +107,13 @@ define Package/snapclient/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/bin/snapclient $(1)/usr/bin/
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/snapclient.init $(1)/etc/init.d/snapclient
-	$(INSTALL_DIR) $(1)/etc/default
-	$(INSTALL_BIN) $(CURDIR)/../../debian/snapclient.default $(1)/etc/default/snapclient
+	$(INSTALL_BIN) ./files/snapclient-procd.init $(1)/etc/init.d/snapclient
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_BIN) ./files/snapclient.conf $(1)/etc/config/snapclient
+	$(INSTALL_DIR) $(1)/usr/local/bin
+	$(INSTALL_BIN) ./files/volume.sh $(1)/usr/local/bin/volume.sh
+	$(INSTALL_BIN) ./files/volume-left.sh $(1)/usr/local/bin/volume-left.sh
+	$(INSTALL_BIN) ./files/volume-right.sh $(1)/usr/local/bin/volume-right.sh
 endef
 
 $(eval $(call BuildPackage,snapserver))
